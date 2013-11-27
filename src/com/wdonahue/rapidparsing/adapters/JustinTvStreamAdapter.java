@@ -81,7 +81,7 @@ public class JustinTvStreamAdapter extends ArrayAdapter<JustinTvStreamData> {
                 .into(holder.channelThumbnailImage);
 
         // If gaming content then show the controller graphic
-        if (stream.getChannel().getCategory().contains("gaming")) {
+        if (stream.getChannel().getCategory().matches("gaming")) {
             // Load the channel type image on a background thread
             Picasso.with(getContext())
                     .load(R.drawable.ic_action_gamepad)
