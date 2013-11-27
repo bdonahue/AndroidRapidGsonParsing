@@ -35,8 +35,6 @@ public class MainActivity extends Activity {
 
     private ProgressBar mProgressBar;
 
-    private boolean mIsDownloadInProgress = false;
-
     private static class ActivityState {
         private int nextPage = 0;
 
@@ -108,55 +106,49 @@ public class MainActivity extends Activity {
     };
 
     private void downloadData(final int pageNumber) {
-        if (!mIsDownloadInProgress) {
-            mIsDownloadInProgress = true;
+        mProgressBar.setVisibility(View.VISIBLE);
 
-            mProgressBar.setVisibility(View.VISIBLE);
+        // Kick off the download using an AsyncTask
+        (new AsyncTask<Void, Void, List<JustinTvStreamData>>() {
+            @Override
+            protected List<JustinTvStreamData> doInBackground(Void... params) {
+                Gson gson = new Gson();
 
-            // Kick off the download using an AsyncTask
-            (new AsyncTask<Void, Void, List<JustinTvStreamData>>() {
-                @Override
-                protected List<JustinTvStreamData> doInBackground(Void... params) {
-                    Gson gson = new Gson();
+                // Download the web site contents into a string
+                String json = Web.getWebsite("http://api.justin.tv/api/stream/list.json?limit=100&offset=" + Integer.toString(pageNumber * ITEMS_PER_PAGE));
 
-                    // Download the web site contents into a string
-                    String json = Web.getWebsite("http://api.justin.tv/api/stream/list.json?limit=100&offset=" + Integer.toString(pageNumber * ITEMS_PER_PAGE));
+                // Strip off the leading and trailing [] GSON does not like that
+                // data = data.substring(1, data.length() - 1);
 
-                    // Strip off the leading and trailing [] GSON does not like that
-                    // data = data.substring(1, data.length() - 1);
+                // Parse the web site contents into our response object
+                // return gson.fromJson(data, JustinTvStreams.class);
 
-                    // Parse the web site contents into our response object
-                    // return gson.fromJson(data, JustinTvStreams.class);
+                // See https://sites.google.com/site/gson/gson-user-guide#TOC-Array-Examples for howto
+                // This is extra hoekey because the root of this JSON is an array
+                // If the root of the JSON was an object we could just do
+                // something like return gson.fromJson(data, JustinTvStreams.class);
+                Type collectionType = new TypeToken<List<JustinTvStreamData>>() {
+                }.getType();
+                return gson.fromJson(json, collectionType);
+            }
 
-                    // See https://sites.google.com/site/gson/gson-user-guide#TOC-Array-Examples for howto
-                    // This is extra hoekey because the root of this JSON is an array
-                    // If the root of the JSON was an object we could just do
-                    // something like return gson.fromJson(data, JustinTvStreams.class);
-                    Type collectionType = new TypeToken<List<JustinTvStreamData>>() {
-                    }.getType();
-                    return gson.fromJson(json, collectionType);
+            @Override
+            protected void onPostExecute(List<JustinTvStreamData> streams) {
+                super.onPostExecute(streams);
+
+                if (streams != null) {
+                    // Add the found streams to our array to render
+                    mState.streamData.addAll(streams);
+
+                    // Tell the adapter that it needs to rerender
+                    mAdapter.notifyDataSetChanged();
+
+                    // Done loading; remove loading indicator
+                    mProgressBar.setVisibility(View.GONE);
+
+                    mState.nextPage++;
                 }
-
-                @Override
-                protected void onPostExecute(List<JustinTvStreamData> streams) {
-                    super.onPostExecute(streams);
-
-                    if (streams != null) {
-                        // Add the found streams to our array to render
-                        mState.streamData.addAll(streams);
-
-                        // Tell the adapter that it needs to rerender
-                        mAdapter.notifyDataSetChanged();
-
-                        // Done loading; remove loading indicator
-                        mProgressBar.setVisibility(View.GONE);
-
-                        mState.nextPage++;
-                    }
-
-                    mIsDownloadInProgress = false;
-                }
-            }).execute();
-        }
+            }
+        }).execute();
     }
 }
