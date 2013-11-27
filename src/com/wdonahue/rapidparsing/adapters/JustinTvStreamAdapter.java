@@ -23,6 +23,11 @@ public class JustinTvStreamAdapter extends ArrayAdapter<JustinTvStreamData> {
     }
 
     @Override
+    public int getItemViewType(int position) {
+        return -1;
+    }
+
+    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView;
         Holder holder;
