@@ -12,6 +12,7 @@ import com.squareup.picasso.Picasso;
 import com.wdonahue.rapidparsing.R;
 import com.wdonahue.rapidparsing.model.JustinTvStreamData;
 
+import java.util.Date;
 import java.util.List;
 
 public class JustinTvStreamAdapter extends ArrayAdapter<JustinTvStreamData> {
@@ -61,7 +62,7 @@ public class JustinTvStreamAdapter extends ArrayAdapter<JustinTvStreamData> {
         holder.lblUser.setText(stream.getChannel().getLogin());
         holder.lblViewers.setText(stream.getStream_count().toString() + " Viewers");
 
-        if (stream.isNew) {
+        if (isStreamNew(stream)) {
             holder.lblNew.setVisibility(View.VISIBLE);
         } else {
             holder.lblNew.setVisibility(View.GONE);
@@ -91,6 +92,20 @@ public class JustinTvStreamAdapter extends ArrayAdapter<JustinTvStreamData> {
         }
 
         return view;
+    }
+
+    private boolean isStreamNew(JustinTvStreamData stream) {
+        long currentTime = (new Date()).getTime();
+
+        Date uptime = new Date(stream.getUp_time());
+        long uptimeMs = uptime.getTime();
+
+        // If its newer than four hours old
+        if (currentTime - uptimeMs < 14400000) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     // Holder class used to efficiently recycle view positions
