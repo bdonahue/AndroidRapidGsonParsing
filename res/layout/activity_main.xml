@@ -12,7 +12,8 @@
         android:horizontalSpacing="5dp"
         android:verticalSpacing="5dp"
         android:stretchMode="columnWidth"
-        android:drawSelectorOnTop="true" />
+        android:drawSelectorOnTop="true"
+        android:background="@android:color/white" />
 
     <ProgressBar
         android:visibility="gone"
